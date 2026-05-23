@@ -120,6 +120,24 @@ function loadAllowlist() {
   catch (_) { return {}; }
 }
 
+function writeAllSync(fd, data) {
+  const buffer = Buffer.from(data);
+  let offset = 0;
+  const sleepBuffer = new SharedArrayBuffer(4);
+  const sleepView = new Int32Array(sleepBuffer);
+  while (offset < buffer.length) {
+    try {
+      offset += fs.writeSync(fd, buffer, offset, buffer.length - offset);
+    } catch (err) {
+      if (err && err.code === 'EAGAIN') {
+        Atomics.wait(sleepView, 0, 0, 10);
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 function evaluateLint({ prefix, testFiles, allowlist }) {
   const count = testFiles.length;
   const entry = allowlist[prefix];
@@ -151,8 +169,9 @@ function run() {
   const hints = results.filter(r => r.verdict === Verdict.HINT_CAN_REMOVE_FROM_ALLOWLIST);
 
   if (jsonMode) {
-    console.log(JSON.stringify({ ok: failures.length === 0, results, failures, hints }, null, 2));
-    process.exit(failures.length > 0 ? 1 : 0);
+    writeAllSync(1, JSON.stringify({ ok: failures.length === 0, results, failures, hints }, null, 2) + '\n');
+    process.exitCode = failures.length > 0 ? 1 : 0;
+    return;
   }
 
   if (failures.length === 0) {

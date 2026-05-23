@@ -137,9 +137,23 @@ function output(result, raw, rawValue) {
   }
   // process.stdout.write() is async when stdout is a pipe — process.exit()
   // can tear down the process before the reader consumes the buffer.
-  // fs.writeSync(1, ...) blocks until the kernel accepts the bytes, and
-  // skipping process.exit() lets the event loop drain naturally.
-  fs.writeSync(1, data);
+  // fs.writeSync(1, ...) can still complete as a partial write to a pipe, so
+  // loop until the full payload is accepted.
+  const buffer = Buffer.from(data);
+  let offset = 0;
+  const sleepBuffer = new SharedArrayBuffer(4);
+  const sleepView = new Int32Array(sleepBuffer);
+  while (offset < buffer.length) {
+    try {
+      offset += fs.writeSync(1, buffer, offset, buffer.length - offset);
+    } catch (err) {
+      if (err && err.code === 'EAGAIN') {
+        Atomics.wait(sleepView, 0, 0, 10);
+        continue;
+      }
+      throw err;
+    }
+  }
 }
 
 /**

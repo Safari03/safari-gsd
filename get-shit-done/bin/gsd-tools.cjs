@@ -277,6 +277,31 @@ function _dispatchNonFamily({ registryCommand, registryArgs, legacyCommand, lega
 
 // ─── Arg parsing helpers ──────────────────────────────────────────────────────
 
+function writeAllSync(writeSyncFn, fd, data) {
+  const buffer = Buffer.isBuffer(data) ? data : Buffer.from(String(data));
+  let offset = 0;
+  const sleepBuffer = new SharedArrayBuffer(4);
+  const sleepView = new Int32Array(sleepBuffer);
+  while (offset < buffer.length) {
+    try {
+      offset += writeSyncFn.call(fs, fd, buffer, offset, buffer.length - offset);
+    } catch (err) {
+      if (err && err.code === 'EAGAIN') {
+        Atomics.wait(sleepView, 0, 0, 10);
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+function captureWriteArg(data, offset, length) {
+  if (!Buffer.isBuffer(data)) return String(data);
+  const start = offset || 0;
+  const end = start + (length ?? data.length);
+  return data.subarray(start, end).toString();
+}
+
 /**
  * Extract named --flag <value> pairs from an args array.
  * Returns an object mapping flag names to their values (null if absent).
@@ -504,12 +529,13 @@ async function main() {
   if (pickField) {
     const origWriteSync = fs.writeSync;
     let captured = '';
-    fs.writeSync = function (fd, data, ...rest) {
+    fs.writeSync = function (fd, data, offset, length, ...rest) {
       if (fd === 1) {
-        captured += String(data);
-        return;
+        const chunk = captureWriteArg(data, offset, length);
+        captured += chunk;
+        return Buffer.byteLength(chunk);
       }
-      return origWriteSync.call(fs, fd, data, ...rest);
+      return origWriteSync.call(fs, fd, data, offset, length, ...rest);
     };
     const cleanup = () => {
       fs.writeSync = origWriteSync;
@@ -521,9 +547,9 @@ async function main() {
         const obj = JSON.parse(jsonStr);
         const value = extractField(obj, pickField);
         const result = value === null || value === undefined ? '' : String(value);
-        origWriteSync.call(fs, 1, result);
+        writeAllSync(origWriteSync, 1, result);
       } catch {
-        origWriteSync.call(fs, 1, captured);
+        writeAllSync(origWriteSync, 1, captured);
       }
     };
     try {
@@ -543,12 +569,13 @@ async function main() {
   // that breaks on PowerShell and other non-bash shells.
   const origWriteSync2 = fs.writeSync;
   let captured = '';
-  fs.writeSync = function (fd, data, ...rest) {
+  fs.writeSync = function (fd, data, offset, length, ...rest) {
     if (fd === 1) {
-      captured += String(data);
-      return;
+      const chunk = captureWriteArg(data, offset, length);
+      captured += chunk;
+      return Buffer.byteLength(chunk);
     }
-    return origWriteSync2.call(fs, fd, data, ...rest);
+    return origWriteSync2.call(fs, fd, data, offset, length, ...rest);
   };
   try {
     await runCommand(command, args, cwd, raw, defaultValue, originalCommand);
@@ -558,7 +585,7 @@ async function main() {
   if (captured.startsWith('@file:')) {
     captured = fs.readFileSync(captured.slice(6), 'utf-8');
   }
-  origWriteSync2.call(fs, 1, captured);
+  writeAllSync(origWriteSync2, 1, captured);
 }
 
 /**
