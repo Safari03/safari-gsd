@@ -30,6 +30,7 @@ function parseArgs(argv) {
     profile: 'full',
     reportDir: null,
     backupDir: null,
+    migrationResolve: process.env.GSD_INSTALLER_MIGRATION_RESOLVE || null,
     confirmLiveWrite: false,
   };
 
@@ -53,6 +54,10 @@ function parseArgs(argv) {
       opts.backupDir = arg.slice('--backup-dir='.length);
     } else if (arg.startsWith('--live-dir=')) {
       opts.liveDir = arg.slice('--live-dir='.length);
+    } else if (arg === '--migration-resolve') {
+      opts.migrationResolve = requireValue(argv, ++i, arg);
+    } else if (arg.startsWith('--migration-resolve=')) {
+      opts.migrationResolve = arg.slice('--migration-resolve='.length);
     } else if (arg === '--confirm-live-write') {
       opts.confirmLiveWrite = true;
     } else if (arg === '-h' || arg === '--help') {
@@ -80,7 +85,7 @@ function printUsage() {
 Usage:
   node scripts/safari-runtime-deploy.cjs dry-run [--live-dir ~/.codex] [--report-dir <dir>]
   node scripts/safari-runtime-deploy.cjs backup --backup-dir <dir> [--live-dir ~/.codex]
-  node scripts/safari-runtime-deploy.cjs deploy --backup-dir <dir> --confirm-live-write [--live-dir ~/.codex]
+  node scripts/safari-runtime-deploy.cjs deploy --backup-dir <dir> --confirm-live-write [--live-dir ~/.codex] [--migration-resolve keep|remove]
   node scripts/safari-runtime-deploy.cjs rollback --backup-dir <dir> --confirm-live-write [--live-dir ~/.codex]
 
 Dry-run never writes to the live Codex directory. Deploy and rollback require
@@ -214,8 +219,14 @@ function findTextLeaksInRoots(root, roots, text) {
   });
 }
 
-function runInstall(configDir, profile) {
+function runInstall(configDir, profile, migrationResolve = null) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'safari-gsd-home-'));
+  const env = {
+    ...process.env,
+    HOME: home,
+    CODEX_HOME: configDir,
+  };
+  if (migrationResolve) env.GSD_INSTALLER_MIGRATION_RESOLVE = migrationResolve;
   const result = cp.spawnSync(process.execPath, [
     INSTALLER,
     '--codex',
@@ -226,11 +237,7 @@ function runInstall(configDir, profile) {
   ], {
     cwd: REPO_ROOT,
     encoding: 'utf8',
-    env: {
-      ...process.env,
-      HOME: home,
-      CODEX_HOME: configDir,
-    },
+    env,
   });
   return { result, home };
 }
@@ -328,7 +335,7 @@ function main() {
     const runRoot = opts.reportDir || path.join(os.tmpdir(), `safari-gsd-runtime-dryrun-${timestamp()}`);
     const dryDir = path.join(runRoot, 'codex-home');
     ensureDir(dryDir);
-    const { result } = runInstall(dryDir, opts.profile);
+    const { result } = runInstall(dryDir, opts.profile, opts.migrationResolve);
     const output = `${result.stdout || ''}${result.stderr || ''}`;
     if (result.status !== 0) {
       process.stdout.write(output);
@@ -357,7 +364,7 @@ function main() {
     const manifest = createBackup(opts.liveDir, opts.backupDir);
     console.log(`Backup complete: ${opts.backupDir}`);
     console.log(`Entries: ${manifest.entries.join(', ') || '(none)'}`);
-    const { result } = runInstall(opts.liveDir, opts.profile);
+    const { result } = runInstall(opts.liveDir, opts.profile, opts.migrationResolve);
     process.stdout.write(result.stdout || '');
     process.stderr.write(result.stderr || '');
     if (result.status !== 0) throw new Error(`Live installer failed with exit ${result.status}`);
