@@ -10,9 +10,10 @@ requires: [config, update]
 ---
 
 <objective>
-Manage the runtime skill surface without reinstall. Reads/writes `~/.claude/.gsd-surface.json`
-(sibling to `~/.claude/.gsd-profile`) and re-stages the active skills directory in place.
-Skill dirs live at `~/.claude/skills/gsd-*/`.
+Manage the runtime skill surface without reinstall. Reads/writes `.gsd-surface.json`
+(sibling to `.gsd-profile`) under the active runtime config directory and re-stages
+the active skills directory in place. Skill dirs live under the runtime layout's
+configured skills destination.
 
 Sub-commands: list · status · profile · disable · enable · reset
 </objective>
@@ -115,17 +116,19 @@ Valid cluster names: `core_loop`, `audit_review`, `milestone`, `research_ideate`
 
 ## runtimeConfigDir resolution
 
-The `runtimeConfigDir` for `applySurface` is the **base Claude config directory**
-(`~/.claude`), NOT the skills sub-directory (`~/.claude/skills`).
+The `runtimeConfigDir` for `applySurface` is the **base runtime config directory**,
+NOT the skills sub-directory.
 
 This matches `installRuntimeArtifacts` and `uninstallRuntimeArtifacts`, which also
-receive `~/.claude` as `configDir`. The skill dirs themselves live at
-`~/.claude/skills/gsd-*/` because the `claude global` layout has `destSubpath =
-'skills'` — they are derived from `configDir`, not the root for it.
+receive the base runtime directory as `configDir`. The skill dirs themselves are
+derived from `resolveRuntimeArtifactLayout(runtime, runtimeConfigDir, scope)`, not
+hard-coded to one provider or runtime root.
 
 ```bash
-# Claude Code — global install
-RUNTIME_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+# Claude Code global install example: use CLAUDE_CONFIG_DIR or the Claude
+# default config directory under the user's home.
+# Codex global install example: use CODEX_HOME or the Codex default config
+# directory under the user's home.
 SCOPE="global"
 
 # Artifact destinations are derived from runtime layout
@@ -134,9 +137,10 @@ SCOPE="global"
 ```
 
 Surface state is stored at `${RUNTIME_CONFIG_DIR}/.gsd-surface.json`
-(i.e. `~/.claude/.gsd-surface.json`).
+for the active runtime.
 
-All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
+Runtime config roots can be overridden by their runtime-specific environment
+variables such as `CLAUDE_CONFIG_DIR` or `CODEX_HOME`.
 
 ---
 
@@ -147,9 +151,9 @@ All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
 - Missing `surface.cjs` → prompt: "Run `npm i -g get-shit-done` to reinstall GSD."
 
 <execution_context>
-Surface state file: `~/.claude/.gsd-surface.json`
-Install profile marker: `~/.claude/.gsd-profile`
-Skill dirs: `~/.claude/skills/gsd-*/`
-Engine module: `~/.claude/get-shit-done/bin/lib/surface.cjs`
-Cluster definitions: `~/.claude/get-shit-done/bin/lib/clusters.cjs`
+Surface state file: `${RUNTIME_CONFIG_DIR}/.gsd-surface.json`
+Install profile marker: `${RUNTIME_CONFIG_DIR}/.gsd-profile`
+Skill dirs: derived from `resolveRuntimeArtifactLayout(runtime, RUNTIME_CONFIG_DIR, scope)`
+Engine module: `${RUNTIME_CONFIG_DIR}/get-shit-done/bin/lib/surface.cjs`
+Cluster definitions: `${RUNTIME_CONFIG_DIR}/get-shit-done/bin/lib/clusters.cjs`
 </execution_context>

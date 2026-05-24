@@ -64,7 +64,7 @@ The /gsd:map-codebase --query command has already confirmed that intel.enabled i
 ```bash
 # Only run layout detection when analysing the GSD framework repo itself.
 if [[ "$(jq -r '.name // ""' package.json 2>/dev/null)" == "get-shit-done-redux" ]]; then
-  ls -d .kilo 2>/dev/null && echo "kilo" || (ls -d .claude/get-shit-done 2>/dev/null && echo "claude") || echo "unknown"
+  ls -d .kilo 2>/dev/null && echo "kilo" || (ls -d .codex/get-shit-done 2>/dev/null && echo "codex") || echo "unknown"
 fi
 ```
 
@@ -72,7 +72,7 @@ For all other projects, skip this step and proceed directly to Step 1.
 
 Use the detected root (when applicable) to resolve all canonical paths below:
 
-| Source type | Standard `.claude` layout | `.kilo` layout |
+| Source type | Standard runtime layout | `.kilo` layout |
 |-------------|--------------------------|----------------|
 | Agent files | `agents/*.md` | `.kilo/agents/*.md` |
 | Command files | `commands/gsd/*.md` | `.kilo/command/*.md` |
