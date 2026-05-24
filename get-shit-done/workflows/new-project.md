@@ -18,6 +18,22 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 ## Auto Mode Detection
 
 Check if `--auto` flag is present in $ARGUMENTS.
+Check if `--handoff` is present in $ARGUMENTS.
+Check if `--provider` or `--runtime` is present in $ARGUMENTS.
+
+**If handoff mode:**
+
+- Treat the referenced file as a Safari-OS GSD Build Handoff Packet.
+- Read the packet before Step 2.
+- Preserve it into `.planning/GSD-HANDOFF.md`.
+- Preserve the provider/runtime distinction: OpenAI and Anthropic are service providers; Claude, Codex, and future agents are runtime/model execution choices.
+- Do not restart discovery from zero. Use questioning, research, requirements, and roadmap steps to validate, challenge, and harden the packet.
+- Carry unresolved packet items into `.planning/REQUIREMENTS.md`, `.planning/ROADMAP.md`, or `.planning/STATE.md` as explicit gaps or assumptions.
+- Load Safari context files:
+  - `get-shit-done/contexts/safari/owner.md`
+  - `get-shit-done/contexts/safari/agent-contract.md`
+  - `get-shit-done/contexts/safari/safari-os-bridge.md`
+  - `get-shit-done/contexts/safari/runtime-contract.md`
 
 **If auto mode:**
 
@@ -76,6 +92,18 @@ AGENT_SKILLS_ROADMAPPER=$($GSD_SDK query agent-skills gsd-roadmapper)
 ```
 
 Parse JSON for: `researcher_model`, `synthesizer_model`, `roadmapper_model`, `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`, `git_worktree_root`, `in_nested_subdir`, `project_path`, `agents_installed`, `missing_agents`, `agent_runtime`, `agents_dir`, `required_agents`, `required_agents_installed`, `missing_required_agents`, `agent_skill_payloads_available`, `agent_skill_payload_agents`.
+
+**Safari-OS handoff preflight:**
+
+If `--handoff` is present, resolve the referenced packet path from `$ARGUMENTS`.
+
+- If the path cannot be read, stop with a clear error and ask for a valid packet path.
+- Create `.planning/` if needed.
+- Copy the packet content into `.planning/GSD-HANDOFF.md`.
+- Extract and preserve these fields when present: product intent, owner context, target user/customer, problem, success criteria, acceptance tests, non-goals, decisions, open questions, assumptions, source inventory, authority map, missing context, and dev repo target.
+- Treat owner-critical missing context as a planning blocker unless Safari explicitly waives it.
+- When generating PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and STATE.md, reference `.planning/GSD-HANDOFF.md` as the source of owner/product context.
+- Record provider/runtime metadata in `.planning/config.json` if provided. Use provider for service boundary (`none`, `anthropic`, `openai`, `other`) and runtime for execution identity (`harness`, `claude`, `codex`, `other`).
 
 **If `agents_installed` is false:** Display a warning before proceeding:
 ```text
@@ -137,6 +165,8 @@ All subsequent references to the project instruction file use `$INSTRUCTION_FILE
 ## 2. Brownfield Offer
 
 **If auto mode:** Skip to Step 4 (assume greenfield, synthesize PROJECT.md from provided document).
+
+**If handoff mode:** Skip broad product questioning already answered by the packet. Ask only for owner-critical gaps found in `.planning/GSD-HANDOFF.md`, then continue through research/requirements/roadmap as validation.
 
 **If `needs_codebase_map` is true** (from init — existing code detected but no codebase map):
 

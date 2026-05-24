@@ -19,6 +19,7 @@ import { validateWorkstreamName } from './workstream-utils.js';
 import { loadConfig } from './config.js';
 import { assertRuntimeSupportsAutoMode } from './runtime-gate.js';
 import { runQueryCliCommand } from './query/query-cli-adapter.js';
+import { runDeterministicHandoffInit } from './handoff-init.js';
 
 // ─── Parsed CLI args ─────────────────────────────────────────────────────────
 
@@ -29,6 +30,12 @@ export interface ParsedCliArgs {
   initInput: string | undefined;
   /** For 'auto --init': bootstrap from a PRD before running the autonomous loop. */
   init: string | undefined;
+  /** For provider-neutral Safari-OS GSD Build Handoff Packet imports. */
+  handoff: string | undefined;
+  /** Service provider, not runtime identity: none, anthropic, openai, or other. */
+  provider: string | undefined;
+  /** Runtime/model execution choice: harness, claude, codex, or other. */
+  runtime: string | undefined;
   projectDir: string;
   wsPort: number | undefined;
   model: string | undefined;
@@ -121,6 +128,9 @@ function parseCliArgsQueryPermissive(argv: string[]): ParsedCliArgs {
     prompt: undefined,
     initInput: undefined,
     init: undefined,
+    handoff: undefined,
+    provider: undefined,
+    runtime: undefined,
     projectDir,
     wsPort,
     model,
@@ -150,6 +160,9 @@ export function parseCliArgs(argv: string[]): ParsedCliArgs {
       model: { type: 'string' },
       'max-budget': { type: 'string' },
       init: { type: 'string' },
+      handoff: { type: 'string' },
+      provider: { type: 'string' },
+      runtime: { type: 'string' },
       help: { type: 'boolean', short: 'h', default: false },
       version: { type: 'boolean', short: 'v', default: false },
     },
@@ -169,6 +182,9 @@ export function parseCliArgs(argv: string[]): ParsedCliArgs {
     prompt,
     initInput,
     init: values.init as string | undefined,
+    handoff: values.handoff as string | undefined,
+    provider: values.provider as string | undefined,
+    runtime: values.runtime as string | undefined,
     projectDir: values['project-dir'] as string,
     wsPort: values['ws-port'] ? Number(values['ws-port']) : undefined,
     model: values.model as string | undefined,
@@ -198,6 +214,9 @@ Commands:
 Options:
   --init <input>        Bootstrap from a PRD before running (auto only)
                         Accepts @path/to/prd.md or "description text"
+  --handoff <path>      Deterministically import a Safari-OS GSD Build Handoff Packet
+  --provider <name>     Service provider: none, anthropic, openai, or other
+  --runtime <name>      Runtime/model choice: harness, claude, codex, or other
   --project-dir <dir>   Project directory (default: cwd)
   --ws <name>           Route .planning/ to .planning/workstreams/<name>/
   --ws-port <port>      Enable WebSocket transport on <port>
@@ -355,6 +374,40 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
   // ─── Init command ─────────────────────────────────────────────────────────
   if (args.command === 'init') {
+    if (args.handoff) {
+      try {
+        const result = await runDeterministicHandoffInit({
+          projectDir: args.projectDir,
+          handoffPath: args.handoff,
+          provider: args.provider,
+          runtime: args.runtime,
+        });
+
+        const status = result.success ? 'SUCCESS' : 'FAILED';
+        const stepCount = result.steps.length;
+        const passedSteps = result.steps.filter(s => s.success).length;
+        const duration = (result.totalDurationMs / 1000).toFixed(1);
+        const artifactList = result.artifacts.join(', ');
+
+        console.log(`[handoff ${status}] ${passedSteps}/${stepCount} steps, $0.00, ${duration}s`);
+        if (result.artifacts.length > 0) {
+          console.log(`Artifacts: ${artifactList}`);
+        }
+        if (!result.success) {
+          for (const step of result.steps) {
+            if (!step.success && step.error) {
+              console.error(`  ✗ ${step.step}: ${step.error}`);
+            }
+          }
+          process.exitCode = 1;
+        }
+      } catch (err) {
+        console.error(`Fatal error: ${(err as Error).message}`);
+        process.exitCode = 1;
+      }
+      return;
+    }
+
     let input: string;
     try {
       input = await resolveInitInput(args);

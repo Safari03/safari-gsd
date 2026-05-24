@@ -46,7 +46,12 @@ Creates all `.planning/` artifacts:
 - `ROADMAP.md` — phases mapped to requirements
 - `STATE.md` — project memory
 
-Usage: `/gsd:new-project`
+Usage: `/gsd:new-project [--auto] [--handoff @path] [--provider none|anthropic|openai|other] [--runtime harness|claude|codex|other]`
+
+- `--auto` — initialize from an idea document or pasted idea without follow-up prompts where safe
+- `--handoff @path` — initialize from a Safari-OS GSD Build Handoff Packet; GSD validates and hardens the owner/product context instead of restarting discovery from zero
+- `--provider` — service provider boundary; OpenAI and Anthropic are providers, not runtimes
+- `--runtime` — execution identity; Claude, Codex, and future agents run behind the same contract
 
 **`/gsd:map-codebase [--fast] [--focus <area>] [--query <term>]`**
 Map an existing codebase for brownfield projects.

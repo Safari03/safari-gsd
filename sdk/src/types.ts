@@ -609,6 +609,7 @@ export interface GSDMilestoneCompleteEvent extends GSDEventBase {
  */
 export type InitStepName =
   | 'setup'
+  | 'handoff'
   | 'config'
   | 'project'
   | 'research-stack'

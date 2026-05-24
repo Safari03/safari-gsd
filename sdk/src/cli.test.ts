@@ -210,6 +210,22 @@ describe('parseCliArgs', () => {
     expect(result.model).toBe('claude-sonnet-4-6');
   });
 
+  it('parses init with deterministic handoff provider and runtime', () => {
+    const result = parseCliArgs([
+      'init',
+      '--handoff', '/tmp/packet.md',
+      '--provider', 'openai',
+      '--runtime', 'codex',
+      '--project-dir', '/tmp/proj',
+    ]);
+
+    expect(result.command).toBe('init');
+    expect(result.handoff).toBe('/tmp/packet.md');
+    expect(result.provider).toBe('openai');
+    expect(result.runtime).toBe('codex');
+    expect(result.projectDir).toBe('/tmp/proj');
+  });
+
   it('does not set initInput for non-init commands', () => {
     const result = parseCliArgs(['run', 'build auth']);
 
@@ -330,6 +346,9 @@ describe('resolveInitInput', () => {
       prompt: undefined,
       initInput: undefined,
       init: undefined,
+      handoff: undefined,
+      provider: undefined,
+      runtime: undefined,
       projectDir: tmpDir,
       wsPort: undefined,
       model: undefined,
@@ -422,5 +441,11 @@ describe('USAGE', () => {
   it('documents --init option', () => {
     expect(USAGE).toContain('--init');
     expect(USAGE).toContain('Bootstrap from a PRD');
+  });
+
+  it('documents handoff provider/runtime as separate concerns', () => {
+    expect(USAGE).toContain('--handoff');
+    expect(USAGE).toContain('Service provider');
+    expect(USAGE).toContain('Runtime/model choice');
   });
 });

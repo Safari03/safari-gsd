@@ -48,6 +48,10 @@ One sentence that drives prioritization when tradeoffs arise.]
 - User research or feedback themes
 - Known issues to address]
 
+## Safari-OS Handoff
+
+[If this project started from Safari-OS, link `.planning/GSD-HANDOFF.md` and summarize the owner/product context that must survive engineering planning. If not applicable, write "Not applicable."]
+
 ## Constraints
 
 - **[Type]**: [What] — [Why]
@@ -103,6 +107,12 @@ Common types: Tech stack, Timeline, Budget, Dependencies, Compatibility, Perform
 - Technical environment, prior work, user feedback
 - Known issues or technical debt to address
 - Update as new context emerges
+
+**Safari-OS Handoff:**
+- Present only when the project starts from a Safari-OS GSD Build Handoff Packet
+- Link `.planning/GSD-HANDOFF.md`
+- Summarize owner/product context, non-goals, decisions, acceptance tests, and missing context
+- Do not treat the handoff as the engineering spec; GSD validates and hardens it
 
 **Constraints:**
 - Hard limits on implementation choices
