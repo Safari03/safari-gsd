@@ -17,6 +17,19 @@ Use the user's language and framing. Update whenever reality drifts from this de
 [The ONE thing that matters most. If everything else fails, this must work.
 One sentence that drives prioritization when tradeoffs arise.]
 
+## Product Maturity
+
+**Current Milestone Maturity:** [Prototype / Local MVP / Pilot-ready / Production-ready]
+
+**Definition of Done at this maturity:**
+[What must be wired end-to-end before GSD can call this milestone complete. For pilot-ready and production-ready, include provider, deployment, schedule, webhook, DNS/sender, env/secrets, and operator readiness requirements.]
+
+**Core Product Loop:**
+[The customer/operator loop milestone audit must verify end-to-end, e.g. signup -> upload -> outbound -> inbound -> classify -> close -> bill.]
+
+**Operational Dependencies:**
+[External providers, background workers, schedules, secrets/env, deployment resources, DNS/sender identity, webhooks, and manual setup steps required for the declared maturity.]
+
 ## Requirements
 
 ### Validated
@@ -86,6 +99,13 @@ Common types: Tech stack, Timeline, Budget, Dependencies, Compatibility, Perform
 - Everything else can fail; this cannot
 - Drives prioritization when tradeoffs arise
 - Rarely changes; if it does, it's a significant pivot
+
+**Product Maturity:**
+- Required before requirements and roadmap planning
+- Prototype allows labeled stubs/fakes for learning goals
+- Local MVP requires a real local end-to-end loop
+- Pilot-ready and Production-ready require operational wiring evidence
+- If production-critical provider/setup/deployment work is deferred, the milestone is blocked or partial, not complete
 
 **Requirements — Validated:**
 - Requirements that shipped and proved valuable

@@ -20,6 +20,12 @@
     "cross_ai_command": "",
     "cross_ai_timeout": 300
   },
+  "product": {
+    "maturity": "local_mvp",
+    "definition_of_done": "",
+    "core_product_loop": "",
+    "operational_dependencies": []
+  },
   "ship": {
     "pr_body_sections": []
   },

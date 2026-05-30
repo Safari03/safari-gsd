@@ -10,6 +10,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 @~/.claude/get-shit-done/references/gate-prompts.md
 @~/.claude/get-shit-done/references/agent-contracts.md
 @~/.claude/get-shit-done/references/gates.md
+@~/.claude/get-shit-done/references/product-maturity-contract.md
 </required_reading>
 
 <available_agent_types>
@@ -63,6 +64,8 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_
 **File paths (for <files_to_read> blocks):** `state_path`, `roadmap_path`, `requirements_path`, `context_path`, `research_path`, `verification_path`, `uat_path`, `reviews_path`. These are null if files don't exist.
 
 **If `planning_exists` is false:** Error — run `/gsd:new-project` first.
+
+Read product maturity from `.planning/config.json`, PROJECT.md, and ROADMAP.md. If maturity is `pilot_ready` or `production_ready` and this phase touches external providers, schedules, deployment, secrets/env, DNS/sender identity, webhooks, workers, or manual provider setup, a current RESEARCH.md is mandatory before planning.
 
 ## 1.5. Closed-Phase Gate (#3569)
 
@@ -914,6 +917,7 @@ ${AGENT_SKILLS_PLANNER}
 
 **Project instructions:** Read ./CLAUDE.md if exists — follow project-specific guidelines
 **Project skills:** Check .claude/skills/ or .agents/skills/ directory (if either exists) — read SKILL.md files, plans should account for project skill rules
+**Product maturity contract:** Read @~/.claude/get-shit-done/references/product-maturity-contract.md. Plans must implement the phase Operational Wiring Inventory. For pilot-ready/production-ready phases, production-critical providers, schedules, deployments, secrets/env, DNS, webhooks, and manual setup cannot be deferred while still calling the phase complete.
 
 ${TDD_MODE === 'true' ? `
 <tdd_mode_active>
@@ -942,6 +946,7 @@ Output consumed by /gsd:execute-phase. Plans need:
 - Tasks in XML format with read_first and acceptance_criteria fields (MANDATORY on every task)
 - Verification criteria
 - must_haves for goal-backward verification
+- operational_wiring tasks or explicit N/A reasons for every inventory row
 </downstream_consumer>
 
 <deep_work_rules>
@@ -985,6 +990,8 @@ Every task MUST include these fields — they are NOT optional:
 - [ ] Dependencies correctly identified
 - [ ] Waves assigned for parallel execution
 - [ ] must_haves derived from phase goal
+- [ ] Operational Wiring Inventory rows from ROADMAP are covered by tasks or marked N/A with reasons
+- [ ] Provider/setup/deployment/schedule/env/webhook/DNS dependencies have verification tasks when required by maturity
 </quality_gate>
 ```
 

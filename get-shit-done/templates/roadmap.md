@@ -11,6 +11,12 @@ Template for `.planning/ROADMAP.md`.
 
 [One paragraph describing the journey from start to finish]
 
+## Maturity Contract
+
+**Maturity:** [Prototype / Local MVP / Pilot-ready / Production-ready]
+**Definition of Done:** [Maturity-specific completion bar]
+**Core Product Loop:** [End-to-end customer/operator flow audit must verify]
+
 ## Phases
 
 **Phase Numbering:**
@@ -34,6 +40,18 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. [Observable behavior from user perspective]
   2. [Observable behavior from user perspective]
   3. [Observable behavior from user perspective]
+**Operational Wiring Inventory**:
+  - User-facing UI: [routes/screens/components or N/A with reason]
+  - Admin/operator UI: [views/actions/dashboards or N/A with reason]
+  - Service layer: [services/adapters/handlers/domain logic]
+  - Background jobs: [workers/tasks/queues or N/A with reason]
+  - Schedules: [cron/beat/scheduler/manual trigger reason]
+  - External providers/APIs: [providers/adapters/endpoints/fallbacks]
+  - Env vars/secrets: [required variables, no values]
+  - Deployment resources: [web/worker/beat/db/cache/storage/DNS/sender/webhooks]
+  - Manual/provider setup remaining: [exact steps or None]
+  - Automated tests: [test files/commands expected]
+  - Manual verification: [operator/customer checks expected]
 **Plans**: [Number of plans, e.g., "3 plans" or "TBD"]
 
 Plans:
@@ -119,6 +137,11 @@ Phases execute in numeric order: 2 → 2.1 → 2.2 → 3 → 3.1 → 4
 - Flow downstream to `must_haves` in plan-phase
 - Verified by verify-phase after execution
 - Format: "User can [action]" or "[Thing] works/exists"
+
+**Operational wiring:**
+- Every product phase includes the inventory from `references/product-maturity-contract.md`
+- Phases touching external systems must produce `VERIFICATION.md`
+- Pilot-ready and Production-ready phases cannot defer provider, schedule, deployment, env/secret, DNS/sender, webhook, or manual setup dependencies while still claiming complete
 
 **After milestones ship:**
 - Collapse completed milestones in `<details>` tags

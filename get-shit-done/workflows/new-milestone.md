@@ -7,6 +7,7 @@ Start a new milestone cycle for an existing project. Loads project context, gath
 <required_reading>
 
 Read all files referenced by the invoking prompt's execution_context before starting.
+@~/.claude/get-shit-done/references/product-maturity-contract.md
 
 </required_reading>
 
@@ -45,6 +46,8 @@ If the flag is absent, keep the current behavior of continuing phase numbering f
 - Ask inline (freeform, NOT AskUserQuestion): "What do you want to build next?"
 - Wait for their response, then use AskUserQuestion to probe specifics
 - If user selects "Other" at any point to provide freeform input, ask follow-up as plain text — not another AskUserQuestion
+
+**Mandatory maturity refresh:** Before confirming the milestone summary, ask which maturity level defines done for this milestone and what core customer/operator loop it must prove end-to-end. Preserve both answers in PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and `.planning/config.json` under `product.maturity`, `product.definition_of_done`, and `product.core_product_loop`. If MILESTONE-CONTEXT.md already declares maturity/core loop, present them for confirmation instead of re-asking from scratch.
 
 ## 2.5. Scan Planted Seeds
 
@@ -113,6 +116,8 @@ Before writing any files, present a summary of what was gathered and ask for con
 **Milestone v[X.Y]: [Name]**
 
 **Goal:** [One sentence]
+**Maturity:** [Prototype / Local MVP / Pilot-ready / Production-ready]
+**Core Product Loop:** [loop to verify end-to-end]
 
 **Target features:**
 - [Feature 1]
@@ -277,6 +282,8 @@ If `phase_dir_count > 0` but `phase_archive_path` is missing:
 Check `research_enabled` from init JSON (loaded from config).
 
 **If `research_enabled` is `true`:**
+
+If maturity is Pilot-ready or Production-ready, research is mandatory and must cover provider choices, alternatives considered, external dependencies, operational constraints, cost/risk, deployment resources, auth/secrets, schedules, DNS/sender identity, webhooks, and decision log.
 
 AskUserQuestion: "Research the domain ecosystem for new features before defining requirements?"
 - "Research first (Recommended)" — Discover patterns, features, architecture for NEW capabilities
@@ -495,9 +502,11 @@ Create roadmap for milestone v[X.Y]:
 2. Derive phases from THIS MILESTONE's requirements only
 3. Map every requirement to exactly one phase
 4. Derive 2-5 success criteria per phase (observable user behaviors)
-5. Validate 100% coverage
-6. Write files immediately (ROADMAP.md, STATE.md, update REQUIREMENTS.md traceability)
-7. Return ROADMAP CREATED with summary
+5. Add an Operational Wiring Inventory to every product phase using `references/product-maturity-contract.md`
+6. Validate 100% coverage
+7. For Pilot-ready and Production-ready, do not defer production-critical providers, schedules, deployment resources, env/secrets, DNS/sender identity, webhooks, or manual setup inside a phase marked complete
+8. Write files immediately (ROADMAP.md, STATE.md, update REQUIREMENTS.md traceability)
+9. Return ROADMAP CREATED with summary
 
 Write files first, then return.
 </instructions>

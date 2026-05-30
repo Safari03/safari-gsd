@@ -19,6 +19,8 @@ Answer "What does this domain ecosystem look like?" Write research files in `.pl
 **CRITICAL: Mandatory Initial Read**
 If the prompt contains a `<required_reading>` block, you MUST use the `Read` tool to load every file listed there before performing any other actions. This is your primary context.
 
+@~/.claude/get-shit-done/references/product-maturity-contract.md
+
 Your files feed the roadmap:
 
 | File | How Roadmap Uses It |
@@ -30,6 +32,8 @@ Your files feed the roadmap:
 | `PITFALLS.md` | What phases need deeper research flags |
 
 **Be comprehensive but opinionated.** "Use X because Y" not "Options are X, Y, Z."
+
+For Pilot-ready and Production-ready milestones, research must cover provider choices, alternatives considered, external dependencies, operational constraints, cost/risk notes, deployment resources, auth/secrets, schedules, DNS/sender identity, webhooks, and a decision log.
 </role>
 
 <documentation_lookup>

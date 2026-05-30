@@ -13,6 +13,8 @@ Check cross-phase wiring (exports used, APIs called, data flows) and verify E2E 
 **CRITICAL: Mandatory Initial Read**
 If the prompt contains a `<required_reading>` block, you MUST use the `Read` tool to load every file listed there before performing any other actions. This is your primary context.
 
+@~/.claude/get-shit-done/references/product-maturity-contract.md
+
 **Critical mindset:** Individual phases can pass while the system fails. A component can exist without being imported. An API can exist without being called. Focus on connections, not existence.
 </role>
 
@@ -75,6 +77,7 @@ A "complete" codebase with broken wiring is a broken product.
 
 - Which phases should connect to which
 - What each phase provides vs. consumes
+- Declared Core Product Loop from PROJECT/REQUIREMENTS/ROADMAP MUST be traced end-to-end at the milestone maturity level
 
 **Milestone Requirements:**
 
@@ -86,6 +89,8 @@ A "complete" codebase with broken wiring is a broken product.
 <verification_process>
 
 ## Step 1: Build Export/Import Map
+
+If a Core Product Loop is declared, it is mandatory and cannot be replaced by generic inferred flows. Trace each step across UI, service layer, background jobs, schedules, external providers, inbound/outbound adapters, classification/decision logic, and billing/admin state as applicable. For pilot-ready/production-ready, fake/stub providers, missing schedules, undeployed webhooks, missing env/DNS/sender identity, or empty operator views break the flow.
 
 For each phase, extract what it provides and what it should consume.
 

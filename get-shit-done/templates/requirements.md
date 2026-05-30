@@ -9,6 +9,9 @@ Template for `.planning/REQUIREMENTS.md` — checkable requirements that define 
 
 **Defined:** [date]
 **Core Value:** [from PROJECT.md]
+**Maturity:** [Prototype / Local MVP / Pilot-ready / Production-ready]
+**Definition of Done:** [Maturity-specific completion bar]
+**Core Product Loop:** [End-to-end customer/operator flow audit must verify]
 
 ## v1 Requirements
 
@@ -80,6 +83,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 - ID: `[CATEGORY]-[NUMBER]` (AUTH-01, CONTENT-02, SOCIAL-03)
 - Description: User-centric, testable, atomic
 - Checkbox: Only for v1 requirements (v2 are not yet actionable)
+- Include operational requirements for providers, schedules, deployment, env/secrets, webhooks, and operator/admin surfaces required by the declared maturity
+
+**Maturity Completion Criteria:**
+- Prototype: prove the learning/demo goal and label all stubs/fakes
+- Local MVP: prove the local customer/operator loop with real application wiring
+- Pilot-ready: prove provider-backed controlled-environment operation and any remaining manual/provider setup as blockers
+- Production-ready: prove the live customer/operator loop with production provider, deployment, schedule, webhook, DNS/sender, env/secrets, and recovery evidence
 
 **Categories:**
 - Derive from research FEATURES.md categories

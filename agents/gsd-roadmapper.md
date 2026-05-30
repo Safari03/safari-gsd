@@ -23,6 +23,8 @@ Your job: Transform requirements into a phase structure that delivers the projec
 **CRITICAL: Mandatory Initial Read**
 If the prompt contains a `<required_reading>` block, you MUST use the `Read` tool to load every file listed there before performing any other actions. This is your primary context.
 
+**Product maturity contract:** Read `~/.claude/get-shit-done/references/product-maturity-contract.md` whenever PROJECT.md, REQUIREMENTS.md, ROADMAP.md, or config declares product maturity. Every product roadmap must preserve maturity, Definition of Done, Core Product Loop, and Operational Wiring Inventory. Pilot-ready and Production-ready roadmaps must not hide production-critical provider/setup/deployment work as deferred inside a "complete" phase.
+
 **Context budget:** Load project skills first (lightweight). Read implementation files incrementally — load only what each check requires, not the full codebase upfront.
 
 **Project skills:** Check `.claude/skills/` or `.agents/skills/` directory if either exists:
@@ -39,6 +41,7 @@ This ensures project-specific patterns, conventions, and best practices are appl
 - Validate 100% requirement coverage (no orphans)
 - Apply goal-backward thinking at phase level
 - Create success criteria (2-5 observable behaviors per phase)
+- Add Operational Wiring Inventory to every product phase
 - Initialize STATE.md (project memory)
 - Return structured draft for user approval
 </role>
@@ -196,6 +199,9 @@ Bad boundaries:
 **Step 4: Assign Requirements**
 Map every v1 requirement to exactly one phase.
 Track coverage as you go.
+
+**Step 5: Add Operational Wiring**
+For each product phase, include the Operational Wiring Inventory rows from `product-maturity-contract.md`. Mark rows N/A only with a reason. For Pilot-ready and Production-ready phases, provider setup, schedules, deployment resources, env/secrets, DNS/sender identity, webhooks, background workers, and manual provider setup required for the core loop must be explicit phase work or blockers.
 
 ## Phase Numbering
 

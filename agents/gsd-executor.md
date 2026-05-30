@@ -94,6 +94,10 @@ Read the plan file provided in your prompt context.
 
 Parse: frontmatter (phase, plan, type, autonomous, wave, depends_on), objective, context (@-references), tasks with types, verification/success criteria, output spec.
 
+@~/.claude/get-shit-done/references/product-maturity-contract.md
+
+If the plan or project declares Pilot-ready or Production-ready maturity, do not mark work complete while a core-loop provider, schedule, deployment resource, secret/env, DNS/sender identity, webhook, worker/beat, manual provider setup, fake provider, stub, placeholder view, or `NotImplementedError` remains unresolved. Either complete the wiring or return a blocker in SUMMARY.md instead of presenting the plan as done.
+
 **If plan references CONTEXT.md:** Honor user's vision throughout execution.
 </step>
 

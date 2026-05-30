@@ -4,6 +4,7 @@ Initialize a new project through unified flow: questioning, research (optional),
 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
+@~/.claude/get-shit-done/references/product-maturity-contract.md
 </required_reading>
 
 <available_agent_types>
@@ -38,7 +39,7 @@ Check if `--provider` or `--runtime` is present in $ARGUMENTS.
 **If auto mode:**
 
 - Skip brownfield mapping offer (assume greenfield)
-- Skip deep questioning (extract context from provided document)
+- Skip deep questioning except for the required product maturity/core loop check (extract all other context from provided document)
 - Config: YOLO mode is implicit (skip that question), but ask granularity/git/agents FIRST (Step 2a)
 - After config: run Steps 6-9 automatically with smart defaults:
   - Research: Always yes
@@ -201,6 +202,17 @@ YOLO mode is implicit (auto = YOLO). Ask remaining config questions:
 ```
 AskUserQuestion([
   {
+    header: "Maturity",
+    question: "What maturity level should define done for this product milestone?",
+    multiSelect: false,
+    options: [
+      { label: "Local MVP (Recommended)", description: "End-to-end local product loop with real app wiring; fake external providers only when explicitly labeled" },
+      { label: "Prototype", description: "Learning/demo milestone; stubs and fake providers may be acceptable if clearly labeled" },
+      { label: "Pilot-ready", description: "A real pilot user/operator can run the core loop with required providers, schedules, env, and deployment resources ready" },
+      { label: "Production-ready", description: "Live customer/operator loop with production providers, deployment, webhooks, DNS/sender identity, schedules, and recovery evidence" }
+    ]
+  },
+  {
     header: "Granularity",
     question: "How finely should scope be sliced into phases?",
     multiSelect: false,
@@ -300,11 +312,11 @@ AskUserQuestion([
 
 Build `ship.pr_body_sections` from those choices. For selected options, set `enabled: true`; for seeded but unselected options, set `enabled: false`. If the user selects none, use `"ship":{"pr_body_sections":[]}`.
 
-Create `.planning/config.json` with all settings (CLI fills in remaining defaults automatically):
+Create `.planning/config.json` with all settings (CLI fills in remaining defaults automatically). Include `product.maturity` from the maturity choice:
 
 ```bash
 mkdir -p .planning
-$GSD_SDK query config-new-project '{"mode":"yolo","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":true|false,"auto_advance":true},"ship":{"pr_body_sections":[{"heading":"User Stories & Acceptance Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria","fallback":"- Acceptance criteria are covered by the linked requirements and verification evidence."},{"heading":"Risks & Dependencies","enabled":true|false,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."},{"heading":"Success Metrics & Release Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## Definition of Done || VERIFICATION.md ## Release Criteria","fallback":"- Release when automated verification and required manual checks pass."},{"heading":"Stakeholder Review & Approval","enabled":true|false,"template":"- Product owner approval pending for {phase_name}."}]}}'
+$GSD_SDK query config-new-project '{"mode":"yolo","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","product":{"maturity":"prototype|local_mvp|pilot_ready|production_ready","definition_of_done":"[maturity-specific completion bar]","core_product_loop":"[customer/operator loop]","operational_dependencies":[]},"workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":true|false,"auto_advance":true},"ship":{"pr_body_sections":[{"heading":"User Stories & Acceptance Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria","fallback":"- Acceptance criteria are covered by the linked requirements and verification evidence."},{"heading":"Risks & Dependencies","enabled":true|false,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."},{"heading":"Success Metrics & Release Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## Definition of Done || VERIFICATION.md ## Release Criteria","fallback":"- Release when automated verification and required manual checks pass."},{"heading":"Stakeholder Review & Approval","enabled":true|false,"template":"- Product owner approval pending for {phase_name}."}]}}'
 ```
 
 **If commit_docs = No:** Add `.planning/` to `.gitignore`.
@@ -374,6 +386,14 @@ Ask inline (freeform, NOT AskUserQuestion):
 
 Wait for their response. This gives you the context needed to ask intelligent follow-up questions.
 
+**Mandatory maturity question:** Before the "Ready?" decision gate, ask which maturity level defines done for the first milestone. Use AskUserQuestion with:
+- "Prototype" — demo/learning milestone; labeled fakes and stubs may be acceptable
+- "Local MVP" — local end-to-end product loop with real application wiring
+- "Pilot-ready" — real pilot loop with provider, schedule, env, deployment/manual setup readiness
+- "Production-ready" — live customer/operator loop with production provider, deployment, webhook, DNS/sender identity, schedule, and recovery evidence
+
+Record the selected maturity and ask one follow-up: "What is the core customer/operator loop this milestone must prove end-to-end?" Preserve both answers in PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and `.planning/config.json`.
+
 **Research-before-questions mode:** Check if `workflow.research_before_questions` is enabled in `.planning/config.json` (or the config from init context). When enabled, before asking follow-up questions about a topic area:
 
 1. Do a brief web search for best practices related to what the user described
@@ -425,6 +445,8 @@ Loop until "Create PROJECT.md" selected.
 **If auto mode:** Synthesize from provided document. No "Ready?" gate was shown — proceed directly to commit.
 
 Synthesize all context into `.planning/PROJECT.md` using the template from `templates/project.md`.
+
+Populate `## Product Maturity` from the selected or inferred maturity. If no explicit maturity was available in auto mode, default to `Local MVP` and write an assumption note in `Definition of Done`; do not infer Pilot-ready or Production-ready without explicit text.
 
 **For greenfield projects:**
 
@@ -579,6 +601,8 @@ AskUserQuestion([
 ```
 
 **If "Use as-is":** use the defaults values for config.json and skip directly to **Commit config.json** below.
+
+If defaults do not include `product.maturity`, ask the maturity question before creating config. Do not silently omit it.
 
 **If "Modify some settings":** present a selection of every setting with its current saved value.
 

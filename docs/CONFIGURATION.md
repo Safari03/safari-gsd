@@ -68,6 +68,12 @@ GSD stores project settings in `.planning/config.json`. Created during `/gsd-new
       "mcp": false
     }
   },
+  "product": {
+    "maturity": "local_mvp",
+    "definition_of_done": "",
+    "core_product_loop": "",
+    "operational_dependencies": []
+  },
   "ship": {
     "pr_body_sections": []
   },
@@ -158,6 +164,21 @@ GSD stores project settings in `.planning/config.json`. Created during `/gsd-new
 | `search_gitignored` | boolean | `true`/`false` | `false` | Legacy top-level alias for `planning.search_gitignored`. Prefer the namespaced form; this alias is accepted for backward compatibility |
 
 > **Note:** `granularity` was renamed from `depth` in v1.22.3. Existing configs are auto-migrated.
+
+---
+
+## Product Maturity
+
+Product maturity defines what "complete" means for a product milestone. It prevents local implementation slices from being marked complete when the intended customer/operator loop is not wired at the declared maturity level.
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `product.maturity` | enum | `local_mvp` | Milestone maturity: `prototype`, `local_mvp`, `pilot_ready`, or `production_ready`. Pilot-ready and production-ready milestones require provider, deployment, schedule, webhook, DNS/sender, env/secrets, and operator-readiness evidence for core-loop dependencies. |
+| `product.definition_of_done` | string | `""` | Maturity-specific completion bar copied into PROJECT/REQUIREMENTS/ROADMAP and checked during audit/close. |
+| `product.core_product_loop` | string | `""` | Customer/operator loop milestone audit must trace end-to-end, e.g. signup -> upload -> outbound -> inbound -> classify -> close -> bill. |
+| `product.operational_dependencies` | string[] | `[]` | External providers, background workers, schedules, secrets/env, deployment resources, DNS/sender identity, webhooks, and manual setup required by the declared maturity. |
+
+See `get-shit-done/references/product-maturity-contract.md` for the full operational wiring contract.
 
 ---
 

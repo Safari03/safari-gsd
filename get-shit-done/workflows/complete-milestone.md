@@ -11,6 +11,7 @@ Mark a shipped version (v1.0, v1.1, v2.0) as complete. Creates historical record
 3. `.planning/ROADMAP.md`
 4. `.planning/REQUIREMENTS.md`
 5. `.planning/PROJECT.md`
+6. references/product-maturity-contract.md
 
 </required_reading>
 
@@ -36,6 +37,20 @@ When a milestone completes:
 </archival_behavior>
 
 <process>
+
+<step name="milestone_audit_gate">
+Before closing any product milestone, require a current milestone audit:
+
+```bash
+ls .planning/v*-MILESTONE-AUDIT.md 2>/dev/null | tail -1
+```
+
+If no audit exists, stop and route to `/gsd:audit-milestone`.
+
+If the audit reports missing `VERIFICATION.md`, deferred provider setup, fake/stub providers, empty views, unscheduled background jobs, undeployed webhooks, missing env/secrets/DNS/sender/deployment resources, planning drift, or an unproven core product loop, do not close the milestone. Route to `/gsd:forensics`, `/gsd:audit-milestone`, then a hardening milestone.
+
+For Pilot-ready and Production-ready work, production-critical blockers cannot be acknowledged as normal tech debt and cannot be bypassed with "Proceed anyway."
+</step>
 
 <step name="pre_close_artifact_audit">
 Before proceeding with milestone close, run the comprehensive open artifact audit.
@@ -137,6 +152,8 @@ MUST present 3 options:
 1. **Proceed anyway** — mark milestone complete with known gaps
 2. **Run audit first** — `/gsd:audit-milestone` to assess gap severity
 3. **Abort** — return to development
+
+If the unchecked requirement is production-critical at Pilot-ready or Production-ready maturity, remove "Proceed anyway"; the milestone is blocked or partial until the dependency is wired or maturity is explicitly downgraded.
 
 If user selects "Proceed anyway": note incomplete requirements in MILESTONES.md under `### Known Gaps` with REQ-IDs and descriptions.
 

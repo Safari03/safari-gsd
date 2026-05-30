@@ -28,6 +28,7 @@ Read STATE.md before any operation to load project context.
 @~/.claude/get-shit-done/references/agent-contracts.md
 @~/.claude/get-shit-done/references/context-budget.md
 @~/.claude/get-shit-done/references/gates.md
+@~/.claude/get-shit-done/references/product-maturity-contract.md
 </required_reading>
 
 <available_agent_types>
@@ -1376,8 +1377,13 @@ Agent(
 Phase directory: {phase_dir}
 Phase goal: {goal from ROADMAP.md}
 Phase requirement IDs: {phase_req_ids}
+Product maturity: {product.maturity from config/PROJECT/ROADMAP}
 Check must_haves against actual codebase.
 Cross-reference requirement IDs from PLAN frontmatter against REQUIREMENTS.md — every ID MUST be accounted for.
+Apply product maturity contract:
+- Read the phase Operational Wiring Inventory from ROADMAP/PLAN.
+- If the phase touches external systems, VERIFICATION.md is mandatory.
+- For pilot-ready/production-ready, provider setup, schedules, deployment resources, secrets/env, DNS/sender identity, webhooks, workers/beat, manual provider setup, fake/stub providers, empty views, and NotImplementedError on the core loop are blockers unless maturity is downgraded.
 Create VERIFICATION.md.
 
 <files_to_read>
@@ -1409,6 +1415,7 @@ grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
 | `passed` | → update_roadmap |
 | `human_needed` | Persist and present human testing items; keep phase pending until verification reruns as `passed` |
 | `gaps_found` | Present gap summary, offer `/gsd:plan-phase {phase} --gaps ${GSD_WS}` |
+| `blocked` or `partial` | Treat as `gaps_found`; do not mark phase complete |
 
 **If human_needed:**
 
@@ -1498,6 +1505,28 @@ Gap closure cycle: `/gsd:plan-phase {X} --gaps ${GSD_WS}` reads VERIFICATION.md 
 
 <step name="update_roadmap">
 **Mark phase complete and update all tracking files:**
+
+Before calling `phase.complete`, enforce the maturity gate:
+
+```bash
+MATURITY=$($GSD_SDK query config-get product.maturity 2>/dev/null || echo "")
+VERIFICATION_FILE=$(ls "$PHASE_DIR"/*-VERIFICATION.md 2>/dev/null | head -1 || true)
+if [ -z "$VERIFICATION_FILE" ]; then
+  echo "BLOCKED: phase cannot close without VERIFICATION.md"
+  exit 1
+fi
+STATUS=$(grep "^status:" "$VERIFICATION_FILE" | head -1 | cut -d: -f2 | tr -d ' ')
+if [ "$STATUS" != "passed" ]; then
+  echo "BLOCKED: phase verification status is $STATUS, not passed"
+  exit 1
+fi
+if [ "$MATURITY" = "pilot_ready" ] || [ "$MATURITY" = "production_ready" ]; then
+  if grep -Eiq "NotImplementedError|fake provider|stub|placeholder|empty view|deferred (webhook|DNS|sender|secret|env|schedule|beat|deployment|provider|manual setup)" "$VERIFICATION_FILE"; then
+    echo "BLOCKED: pilot/production phase has unresolved operational wiring"
+    exit 1
+  fi
+fi
+```
 
 ```bash
 COMPLETION=$($GSD_SDK query phase.complete "${PHASE_NUMBER}")

@@ -4,6 +4,7 @@ Verify milestone achieved its definition of done by aggregating phase verificati
 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
+@~/.claude/get-shit-done/references/product-maturity-contract.md
 </required_reading>
 
 <available_agent_types>
@@ -50,6 +51,7 @@ $GSD_SDK query phases.list
 - Identify all phase directories in scope
 - Extract milestone definition of done from ROADMAP.md
 - Extract requirements mapped to this milestone from REQUIREMENTS.md
+- Read `product.maturity`, Definition of Done, and Core Product Loop from `.planning/config.json`, `.planning/PROJECT.md`, `.planning/REQUIREMENTS.md`, and `.planning/ROADMAP.md`. If they disagree, add a planning drift finding.
 
 ## 2. Read All Phase Verifications
 
@@ -68,8 +70,17 @@ From each VERIFICATION.md, extract:
 - **Non-critical gaps:** tech debt, deferred items, warnings
 - **Anti-patterns found:** TODOs, stubs, placeholders
 - **Requirements coverage:** which requirements satisfied/blocked
+- **Operational Wiring Inventory evidence:** UI, admin/operator UI, services, jobs, schedules, providers/APIs, env/secrets, deployment resources, manual/provider setup, automated tests, manual verification
 
 If a phase is missing VERIFICATION.md, flag it as "unverified phase" — this is a blocker.
+
+For Pilot-ready and Production-ready milestones, scan SUMMARY/VERIFICATION/VALIDATION/CONTEXT/RESEARCH/ROADMAP and source evidence for:
+- fake/stub providers or fallback-to-fake behavior
+- `NotImplementedError`, placeholders, empty user/admin/operator views
+- deferred provider setup, DNS/sender identity, webhook, env/secret, deployment, or manual setup
+- Celery/background tasks without schedules
+- webhook handlers without deployed endpoints
+- local-only landing, billing, or provider evidence on the declared core loop
 
 ## 3. Spawn Integration Checker
 
@@ -91,6 +102,7 @@ Milestone Requirements:
 MUST map each integration finding to affected requirement IDs where applicable.
 
 Verify cross-phase wiring and E2E user flows.
+For product maturity, explicitly trace the declared Core Product Loop from PROJECT/REQUIREMENTS/ROADMAP. Example shape: signup -> upload -> contact readiness -> outbound email -> inbound reply -> LLM classification -> close/escalate -> billing state.
 ${AGENT_SKILLS_CHECKER}",
   subagent_type="gsd-integration-checker",
   model="{integration_checker_model}"
@@ -104,6 +116,8 @@ ${AGENT_SKILLS_CHECKER}",
 Combine:
 - Phase-level gaps and tech debt (from step 2)
 - Integration checker's report (wiring gaps, broken flows)
+- Operational wiring gaps from the maturity contract
+- Planning drift between PROJECT.md, ROADMAP.md, STATE.md, AGENTS.md/CLAUDE.md, stack docs, config, and codebase evidence
 
 ## 5. Check Requirements Coverage (3-Source Cross-Reference)
 
@@ -364,5 +378,8 @@ Insert a closure phase using the standard chain:
 - [ ] FAIL gate enforced — any unsatisfied requirement forces gaps_found status
 - [ ] Nyquist compliance scanned for all milestone phases (if enabled)
 - [ ] Missing VALIDATION.md phases flagged with validate-phase suggestion
+- [ ] Product maturity, Definition of Done, and Core Product Loop checked
+- [ ] Operational Wiring Inventory checked for every phase
+- [ ] Missing VERIFICATION.md, deferred provider setup, fake/stub providers, empty views, unscheduled jobs, undeployed webhooks, and stale planning docs flagged
 - [ ] Results presented with actionable next steps
 </success_criteria>

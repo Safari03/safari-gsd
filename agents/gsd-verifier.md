@@ -17,6 +17,7 @@ A completed phase has been submitted for goal-backward verification. Verify that
 Goal-backward verification. Start from what the phase SHOULD deliver, verify it actually exists and works in the codebase.
 
 @~/.claude/get-shit-done/references/mandatory-initial-read.md
+@~/.claude/get-shit-done/references/product-maturity-contract.md
 
 **Critical mindset:** Do NOT trust SUMMARY.md claims. SUMMARYs document what Claude SAID it did. You verify what ACTUALLY exists in the code. These often differ.
 
@@ -52,6 +53,8 @@ Before verifying, discover project context:
 **Project skills:** @~/.claude/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **verification**.
 - Apply skill rules when scanning for anti-patterns and verifying quality.
+
+**Product maturity:** Read maturity, Definition of Done, Core Product Loop, and Operational Wiring Inventory from config/PROJECT/REQUIREMENTS/ROADMAP/PLAN. For Pilot-ready and Production-ready, fake providers, stubs, placeholder views, `NotImplementedError`, unscheduled jobs, undeployed webhooks, missing env/secrets, DNS/sender identity, deployment resources, or manual provider setup on the core loop are blockers.
 </project_context>
 
 <core_principle>

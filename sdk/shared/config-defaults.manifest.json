@@ -21,6 +21,12 @@
     "milestone_branch_template": "gsd/{milestone}-{slug}",
     "quick_branch_template": null
   },
+  "product": {
+    "maturity": "local_mvp",
+    "definition_of_done": "",
+    "core_product_loop": "",
+    "operational_dependencies": []
+  },
   "workflow": {
     "research": true,
     "plan_check": true,
